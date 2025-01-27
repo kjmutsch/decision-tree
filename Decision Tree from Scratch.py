@@ -179,3 +179,233 @@ tree = build_tree(X, y, max_depth=3)
 
 # Print the tree
 print_tree(tree)
+
+# COMMAND ----------
+
+def accuracy(tree, X_test, y_test):
+    """Calculate the accuracy of the decision tree on the test data."""
+    correct_predictions = 0
+    for i in range(len(X_test)):
+        if predict(tree, X_test[i]) == y_test[i]:
+            correct_predictions += 1
+    return correct_predictions / len(X_test)
+
+# COMMAND ----------
+
+def predict(tree, X):
+    """Make a prediction for a single instance X using the decision tree."""
+    if tree.value is not None:
+        return tree.value
+    feature_value = X[tree.feature_index]
+    print(feature_value, tree.threshold)
+    if feature_value <= tree.threshold:
+        return predict(tree.left, X)
+    else:
+        return predict(tree.right, X)
+
+# COMMAND ----------
+
+test_data = [
+  ['Green', 3, 'Apple'],
+  ['Yellow', 4, 'Apple'],
+  ['Red', 1, 'Grape'],
+  ['Yellow', 3, 'Lemon'],
+]
+X_test = [row[:2] for row in test_data]  # Features
+y_test = [row[2] for row in test_data]   # Labels
+
+# Make a prediction and test the accuracy of tree
+predictions = [predict(tree, x) for x in X_test]
+print("Predictions: ", predictions)
+
+accur = accuracy(tree, X_test, y_test)
+print("Accuracy:", accur)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Use a the iris dataset to test model
+
+# COMMAND ----------
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+
+# Load the iris dataset
+iris = load_iris()
+X, y = iris.data, iris.target # features and labels
+
+print(X,y)
+
+# COMMAND ----------
+
+# Split the dataset into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) # random state is so we can reproduce the same split, 20% of the data is used for testing
+
+iris_tree = build_tree(X_train.tolist(), y_train.tolist(), max_depth=3)
+print_tree(iris_tree)
+
+# COMMAND ----------
+
+# Evaluate the tree
+# Calculate accuracy on the test data
+acc = accuracy(iris_tree, X_test.tolist(), y_test.tolist())
+print("Accuracy:", acc)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Tests
+# MAGIC
+# MAGIC #### Tests with simple dataset
+
+# COMMAND ----------
+
+def test_simple_dataset():
+  # Simple dataset
+  training_data = [
+      [2.7, 2.5, 'A'],
+      [1.3, 1.5, 'B'],
+      [3.1, 3.0, 'A'],
+      [1.1, 1.2, 'B'],
+  ]
+  
+  X = [row[:2] for row in training_data]  # Features
+  y = [row[2] for row in training_data]   # Labels
+  
+  # Build the tree
+  tree = build_tree(X, y, max_depth=3)
+  
+  # Test predictions
+  test_data = [
+      [2.8, 2.6],  # Should be 'A'
+      [1.2, 1.3],  # Should be 'B'
+  ]
+  
+  predictions = [predict(tree, x) for x in test_data]
+  expected = ['A', 'B']
+  
+  assert predictions == expected, f"Expected {expected}, but got {predictions}"
+  print("test_simple_dataset passed")
+
+test_simple_dataset()
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Test with Iris Dataset
+
+# COMMAND ----------
+
+def test_iris_dataset():
+  from sklearn.datasets import load_iris
+  from sklearn.model_selection import train_test_split
+
+  # Load the iris dataset
+  iris = load_iris()
+  X, y = iris.data, iris.target
+
+  # Split the dataset into training and test sets
+  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+  # Build the tree using the training data
+  tree = build_tree(X_train.tolist(), y_train.tolist(), max_depth=3)
+
+  # Calculate accuracy on the test data
+  acc = accuracy(tree, X_test.tolist(), y_test.tolist())
+  
+  assert acc > 0.7, f"Expected accuracy > 0.7, but got {acc}"
+  print("test_iris_dataset passed")
+
+test_iris_dataset()
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Test of single class (all labeled 'A')
+
+# COMMAND ----------
+
+def test_edge_cases():
+  # Dataset with only one class
+  training_data = [
+      [2.7, 2.5, 'A'],
+      [3.1, 3.0, 'A'],
+      [2.9, 2.8, 'A'],
+  ]
+  
+  X = [row[:2] for row in training_data]  # Features
+  y = [row[2] for row in training_data]   # Labels
+  
+  # Build the tree
+  tree = build_tree(X, y, max_depth=3)
+  
+  # Test predictions
+  test_data = [
+      [2.8, 2.6],  # Should be 'A'
+      [3.0, 2.9],  # Should be 'A'
+  ]
+  
+  predictions = [predict(tree, x) for x in test_data]
+  expected = ['A', 'A']
+  
+  assert predictions == expected, f"Expected {expected}, but got {predictions}"
+  print("test_edge_cases passed")
+
+test_edge_cases()
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Test accuracy calculation
+
+# COMMAND ----------
+
+def test_accuracy_calculation():
+  # Simple dataset
+  training_data = [
+      [2.7, 2.5, 'A'],
+      [1.3, 1.5, 'B'],
+      [3.1, 3.0, 'A'],
+      [1.1, 1.2, 'B'],
+  ]
+  
+  X = [row[:2] for row in training_data]  # Features
+  y = [row[2] for row in training_data]   # Labels
+  
+  # Build the tree
+  tree = build_tree(X, y, max_depth=3)
+  
+  # Test data
+  test_data = [
+      [2.8, 2.6, 'A'],
+      [1.2, 1.3, 'B'],
+      [3.0, 2.9, 'A'],
+      [1.0, 1.1, 'B'],
+  ]
+  
+  X_test = [row[:2] for row in test_data]  # Features
+  y_test = [row[2] for row in test_data]   # Labels
+  
+  # Calculate accuracy
+  acc = accuracy(tree, X_test, y_test)
+  
+  assert acc == 1.0, f"Expected accuracy 1.0, but got {acc}"
+  print("test_accuracy_calculation passed")
+
+test_accuracy_calculation()
+
+
+# COMMAND ----------
+
+def run_all_tests():
+  test_simple_dataset()
+  test_iris_dataset()
+  test_edge_cases()
+  test_accuracy_calculation()
+  print("All tests passed")
+
+run_all_tests()
