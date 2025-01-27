@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC ## Decision Tree in Python from Scratch
 # MAGIC
-# MAGIC <p>This project is a passion project in my pursuit of machine learning knowledge. I felt to understand decision trees the best, I should make my own from scratch. I'm using the ___ algorithm and gini impurity (instead of entropy)</p>
+# MAGIC <p>This project is a passion project in my pursuit of machine learning knowledge. I felt to understand decision trees the best, I should make my own from scratch. I'm using the CART algorithm and gini impurity to build my tree.</p>
 
 # COMMAND ----------
 
